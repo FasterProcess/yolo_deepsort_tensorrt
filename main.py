@@ -3,19 +3,14 @@ import sys
 sys.path.insert(0, ".")
 
 import os
-import csv
-import random
 import argparse
 import cv2
 import numpy as np
-import onnxruntime as ort
 from decord import VideoReader, cpu
 from deep_sort_realtime.deepsort_tracker import DeepSort
-import pandas as pd
-from torch.utils.data import Dataset, DataLoader, DistributedSampler
 import time
 from threading import Thread
-from yolov11_tensorrt import YOLO, DetectBox
+from yolov11_tensorrt import YOLO
 from queue import Queue
 import cv2
 

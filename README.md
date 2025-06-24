@@ -2,6 +2,8 @@
 
 run yolo and deepsort with python-TensorRT. Do int8-PTQ quant for both yolo and deepsort-embedding model and deploy by TensorRT. img normalize via torch-GPU, this show how to mix-use TensorRT and Pytorch-GPU without CUDA Context Error.
 
+`./yolo_deepsort_tensorrt/deep_sort_realtime` is not the official original code. I modified `yolo_deepsort_tensorrt/deep_sort_realtime/embedder/mobilenetv2_embedder_trt.py` and `yolo_deepsort_tensorrt/deep_sort_realtime/deepsort_tracker.py` to make TensorRT enable, but it is still compatible with the official code, and allow you set `embedder="mobilenet_trt"` when init DeepSort object to use tensorrt.
+
 # How to generate Calibrator Dataset
 
 You can run yolo to detect objects, then crop the box area and store it in `./dataset/` in PNG or JPG format. Just keep the original resolution and no other special names are required.
