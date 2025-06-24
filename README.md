@@ -8,6 +8,10 @@ run yolo and deepsort with python-TensorRT. Do int8-PTQ quant for both yolo and 
 
 You can run yolo to detect objects, then crop the box area and store it in `./dataset/` in PNG or JPG format. Just keep the original resolution and no other special names are required.
 
+# How to export trt engine
+
+You can view https://github.com/oneflyingfish/yolov11_tensorrt
+
 # Introduction
 
 This project provides the code based on python-TensorRT for YOLOv8 or YOLOv11 (they are fully compatible). Note that all onnx here are single-input single-output models.
