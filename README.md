@@ -22,40 +22,63 @@ This project provides the code based on python-TensorRT for YOLOv8 or YOLOv11 (t
 
 `notic:` if you run this code and find that it leans towards only `person` detection, don't worry. This is very likely because the main code has been handled, as I am very concerned about the `person` detected results. In fact, the code of YOLO is complete and it fully considers all detect-types, you can fine-tune the external code by yourself.
 
-# env
+# usage
 
-```bash
-# apt install nvidia-driver-535
+```python
+from yolov11_tensorrt import YOLO
+from deep_sort_realtime.deepsort_tracker import DeepSort
+import cv2
+import numpy as np
 
-# install CUDA-12.4 + cuDNN 9.10.2
-## omitted how to install CUDA-12.4, here
-cat >> ~/.bashrc <<EOF
-export CUDA_HOME=/usr/local/cuda-12.4
-export PATH=$CUDA_HOME/bin:$PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
-EOF
-# nvcc -V to check CUDA version
+yolo = YOLO(
+    trt_engine="model/yolov11m_dynamic.engine",
+    confidence_thres=0.8,
+    iou_thres=0.5,
+    max_batch_size=1,
+)
 
-wget https://developer.download.nvidia.com/compute/cudnn/9.10.2/local_installers/cudnn-local-repo-ubuntu2204-9.10.2_1.0-1_amd64.deb
-dpkg -i cudnn-local-repo-ubuntu2204-9.10.2_1.0-1_amd64.deb
-cp /var/cudnn-local-repo-ubuntu2204-9.10.2/cudnn-*-keyring.gpg /usr/share/keyrings/
-apt-get update
-apt-get -y install cudnn-cuda-12
+tracker = DeepSort(
+    max_age=30,
+    n_init=3,
+    max_iou_distance=0.7,
+    max_cosine_distance=0.3,
+    gating_only_position=True,          # set True if target has undergone severe deformation.
+    embedder="mobilenet_trt",
+    embedder_gpu=True,
+    bgr=True,                           # set True if your input img is BGR.
+    embedding_engine="model/deepsort_embedding.engine",
+)
 
-# install TensorRT
-###################################################### TensorRT Backend ##########################################################
-# CPP version need envs below
-# export TENSORRT_HOME=/usr/local/TensorRT/TensorRT-10.4.0.26
-# export LD_LIBRARY_PATH=$PATH:$TENSORRT_HOME/lib:$LD_LIBRARY_PATH
-# export LIBRARY_PATH=$PATH:$TENSORRT_HOME/lib:$LIBRARY_PATH
-# export C_INCLUDE_PATH=$C_INCLUDE_PATH:$TENSORRT_HOME/include
-# export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$TENSORRT_HOME/include
-###############################################################################################################################
-pip3 install tensorrt==10.4
+# then use same as official DeepSort
+# read imgs
+cap = cv2.VideoCapture("test.mp4")
+assert cap.isOpened(), "video is not opened"
+
+while True:
+    ret, frame = vr.read()
+    if not ret:
+        break
+
+    yolo.detect_sync(np.expand_dims(frame, axis=0))
+    imgs, detections_dicts = yolo.detect_sync_output(wait=True)
+
+    # Transform YOLO detect format to Deepsort format
+    dets=[]
+    for detect_type, detections in detections_dicts[0].items():
+        dets = dets + [
+            [detection.box, detection.score, detection.type_name]
+            for detection in detections
+        ]
+
+    # do track
+    track_results = tracker.update_tracks(dets, frame=imgs[0])
+
+
+tracker.delete_all_tracks()
+yolo.release()
+tracker.release()
 ```
 
-# Addition
+# Environment
 
-* [YOLOv11 with ONNXRuntime](https://github.com/oneflyingfish/yolov11-onnxruntime)
-* [YOLOv11 with TensorRT](https://github.com/oneflyingfish/yolov11_tensorrt)
-* [DeepSort+YOLO11 with TensorRT](https://github.com/oneflyingfish/yolo_deepsort_tensorrt)
+refer to [how to build environment in ubuntu](env.md)
