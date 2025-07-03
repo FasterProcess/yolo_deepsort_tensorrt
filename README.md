@@ -24,59 +24,8 @@ This project provides the code based on python-TensorRT for YOLOv8 or YOLOv11 (t
 
 # usage
 
-```python
-from yolov11_tensorrt import YOLO
-from deep_sort_realtime.deepsort_tracker import DeepSort
-import cv2
-import numpy as np
-
-yolo = YOLO(
-    trt_engine="model/yolov11m_dynamic.engine",
-    confidence_thres=0.8,
-    iou_thres=0.5,
-    max_batch_size=1,
-)
-
-tracker = DeepSort(
-    max_age=30,
-    n_init=3,
-    max_iou_distance=0.7,
-    max_cosine_distance=0.3,
-    gating_only_position=True,          # set True if target has undergone severe deformation.
-    embedder="mobilenet_trt",
-    embedder_gpu=True,
-    bgr=True,                           # set True if your input img is BGR.
-    embedding_engine="model/deepsort_embedding.engine",
-)
-
-# then use same as official DeepSort
-# read imgs
-cap = cv2.VideoCapture("test.mp4")
-assert cap.isOpened(), "video is not opened"
-
-while True:
-    ret, frame = vr.read()
-    if not ret:
-        break
-
-    yolo.detect_sync(np.expand_dims(frame, axis=0))
-    imgs, detections_dicts = yolo.detect_sync_output(wait=True)
-
-    # Transform YOLO detect format to Deepsort format
-    dets=[]
-    for detect_type, detections in detections_dicts[0].items():
-        dets = dets + [
-            [detection.box, detection.score, detection.type_name]
-            for detection in detections
-        ]
-
-    # do track
-    track_results = tracker.update_tracks(dets, frame=imgs[0])
-
-
-tracker.delete_all_tracks()
-yolo.release()
-tracker.release()
+```bash
+python3 main.py
 ```
 
 # Environment
