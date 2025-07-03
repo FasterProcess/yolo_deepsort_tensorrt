@@ -1,0 +1,7 @@
+torch>=2.5
+torchvision
+opencv-python
+tensorrt-stubs==10.11.0.33.1
+pycuda
+tensorrt==10.11.0.33
+scipy
